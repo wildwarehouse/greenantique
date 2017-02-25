@@ -18,4 +18,5 @@
 while ! git push origin $(git rev-parse HEAD)
 do
     sleep 10s
-done
+done &&
+    [ -f Dockerfile ] && time docker build --tag ${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_PROJECT}:$(git rev-parse HEAD)
