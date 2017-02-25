@@ -15,7 +15,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
 
-while ! git push origin $(git rev-parse HEAD)
+while ! git push origin $(git rev-parse --abbrev-ref HEAD)
 do
     sleep 10s
 done &&
