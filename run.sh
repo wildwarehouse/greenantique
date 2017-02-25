@@ -22,6 +22,7 @@ dnf update --assumeyes &&
     dnf install --assumeyes emacs* &&
     dnf install --assumeyes meld &&
     dnf install --assumeyes curl &&
+    dnf install --assumeyes gnome-terminal &&
     cp /opt/docker/docker.repo /etc/yum.repos.d &&
     dnf update --assumeyes &&
     dnf install --assumeyes docker-engine &&
