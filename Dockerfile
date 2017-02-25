@@ -15,7 +15,7 @@
 #   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
 FROM fedora:25
 MAINTAINER Emory Merryman emory.merryman@gmail.com
-COPY run.sh entrypoint.sh user.sudo docker.repo config known_hosts post-commit.sh git-flex.sh git-flex-milestone.sh git-flex-milestone-create.sh git-flex-scratch.sh COPYING README.md /opt/docker/
+COPY run.sh entrypoint.sh user.sudo docker.repo config known_hosts post-commit.sh git-flex.sh git-flex-milestone.sh git-flex-milestone-create.sh git-flex-scratch.sh clean-docker.sh COPYING README.md /opt/docker/
 RUN ["/usr/bin/sh", "/opt/docker/run.sh"]
 VOLUME /usr/local/src
 WORKDIR /usr/local/src
