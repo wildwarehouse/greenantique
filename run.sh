@@ -22,12 +22,14 @@ dnf update --assumeyes &&
     dnf install --assumeyes emacs* &&
     dnf install --assumeyes meld &&
     dnf install --assumeyes curl &&
+    dnf install --assumeyes sudo &&
     dnf install --assumeyes gnome-terminal &&
     cp /opt/docker/docker.repo /etc/yum.repos.d &&
     dnf update --assumeyes &&
     dnf install --assumeyes docker-engine &&
     adduser user &&
-    usermod -a -G docker user &&
+    cp /opt/docker/user.sudo /etc/sudoers.d/user &&
+    chmod 0444 /etc/sudoers.d/user &&
     mkdir /home/user/.ssh &&
     chmod 0700 /home/user/.ssh &&
     cp /opt/docker/config /home/user/.ssh &&
