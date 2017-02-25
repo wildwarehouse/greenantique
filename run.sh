@@ -42,6 +42,10 @@ dnf update --assumeyes &&
     chmod 0500 /usr/local/src/.git/hooks/post-commit &&
     cp /opt/docker/git-flex.sh /usr/local/bin/git-flex &&
     chmod 0555 /usr/local/bin/git-flex &&
+    cp /opt/docker/git-flex-milestone.sh /usr/local/bin/git-flex-milestone &&
+    chmod 0555 /usr/local/bin/git-flex-milestone &&
+    cp /opt/docker/git-flex-milestone-create.sh /usr/local/bin/git-flex-milestone-create &&
+    chmod 0555 /usr/local/bin/git-flex-milestone-create &&
     cp /opt/docker/git-flex-scratch.sh /usr/local/bin/git-flex-scratch &&
     chmod 0555 /usr/local/bin/git-flex-scratch &&
     chown --recursive user:user /usr/local/src &&

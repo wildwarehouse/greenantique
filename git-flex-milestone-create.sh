@@ -15,4 +15,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
 
-curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${KEY_ID}\", \"key\": \"$(cat /home/user/.ssh/id_rsa.pub)\"}" https://api.github.com/repos/
+MAJOR=${1} &&
+    MINOR=${2} &&
+    PATCH=${3} &&
+    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${MAJOR}:${MINOR}:${PATCH}\", \"due_on\": \"$(date +"%Y%m%dT%H%M%SZ" -d "next month")\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}
