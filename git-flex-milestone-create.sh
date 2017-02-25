@@ -20,48 +20,26 @@ MAJOR=${1} &&
     PATCH=${3} &&
     curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${MAJOR}:${MINOR}:${PATCH}\", \"due_on\": \"$(date +"%Y%m%dT%H%M%SZ" -d "next month")\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY} &&
     (
-	major(){
-	    git fetch upstream v${MAJOR} &&
-		minor ||
+	minor() {
+	    get fetch upstream v${MAJOR}.${MINOR} &&
+		patch ||
 		    (
-			[ ${MAJOR} == 0 ] &&
-			    git checkout -b v0 &&
+			[ ${MINOR} == 0 ] &&
+			    git checkout -b v${MAJOR}.0 &&
 			    cp /opt/docker/COPYING . &&
-			    head -n 19 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#" -e "wREADME.md" &&
-			    git add COPYING README.md &&
+			    git add COPYING &&
 			    git commit --allow-empty --message "init" &&
-			    git push upstream v0 &&
+			    git push upstream v${MAJOR}.0 &&
 			    minor
 		    ) ||
 		    (
-			git fetch upstream v$((${MAJOR}-1)) &&
-			    git checkout -b v${MAJOR} &&
-			    head -n 19 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#" -e "wREADME.md" &&
+			git fetch upstream v${MAJOR}.$((${MINOR}-1)) &&
+			    git checkout -b v${MAJOR}.${MINOR} &&
 			    git commit --allow-empty --message "init" &&
-			    git push upstream v${MAJOR} &&
-			    minor
+			    git push upstream v${MAJOR}.${MINOR} &&
+			    patch
 		    )
 	} &&
-	    minor() {
-		get fetch upstream v${MAJOR}.${MINOR} &&
-		    patch ||
-			(
-			    [ ${MINOR} == 0 ] &&
-				git checkout -b v${MAJOR}.0 &&
-				cp /opt/docker/COPYING . &&
-				git add COPYING &&
-				git commit --allow-empty --message "init" &&
-				git push upstream v${MAJOR}.0 &&
-				minor
-			) ||
-			(
-			    git fetch upstream v${MAJOR}.$((${MINOR}-1)) &&
-				git checkout -b v${MAJOR}.${MINOR} &&
-				git commit --allow-empty --message "init" &&
-				git push upstream v${MAJOR}.${MINOR} &&
-				patch
-			)
-	    } &&
 	    patch() {
 		get fetch upstream v${MAJOR}.${MINOR}.${PATCH} &&
 		    (
@@ -82,5 +60,27 @@ MAJOR=${1} &&
 				git commit --allow-empty --message "init" &&
 				git push upstream v${MAJOR}.${MINOR}.${PATCH}
 			)
-	    }
+	    } &&
+	    (
+		git fetch upstream v${MAJOR} &&
+		    minor ||
+			(
+			    [ ${MAJOR} == 0 ] &&
+				git checkout -b v0 &&
+				cp /opt/docker/COPYING . &&
+				head -n 19 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#" -e "wREADME.md" &&
+				git add COPYING README.md &&
+				git commit --allow-empty --message "init" &&
+				git push upstream v0 &&
+				minor
+			) ||
+			(
+			    git fetch upstream v$((${MAJOR}-1)) &&
+				git checkout -b v${MAJOR} &&
+				head -n 19 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#" -e "wREADME.md" &&
+				git commit --allow-empty --message "init" &&
+				git push upstream v${MAJOR} &&
+				minor
+			)
+	    )
     )
