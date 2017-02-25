@@ -1,0 +1,9 @@
+Host upstream
+HostName github.com
+User git
+IdentityFile ~/.ssh/id_rsa
+
+Host origin
+HostName github.com
+User git
+IdentityFile ~/.ssh/id_rsa

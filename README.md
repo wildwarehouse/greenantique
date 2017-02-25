@@ -18,4 +18,32 @@
 
 # greenantique
 
+## Synopsis
 This package sets up a development computer environment.
+
+## Usage
+
+```
+export GITHUB_USER_ID &&
+export GITHUB_TOKEN &&
+export GIT_USER_EMAIL="some.one@some.domain" &&
+export GIT_USER_NAME="Some One" &&
+docker \
+       run \
+       --interactive \
+       --tty \
+       --rm \
+       --volume /tmp/.X11-unix:/tmp/.X11-unix:ro \
+       --env DISPLAY \
+       --net host \
+       --env GITHUB_USER_ID \
+       --env GITHUB_TOKEN \
+       --env GIT_USER_EMAIL \
+       --env GIT_USER_NAME \
+       --env GITHUB_UPSTREAM_ORGANIZATION=wildwarehouse \
+       --env GITHUB_UPSTREAM_REPOSITORY=greenantique \
+       --env GITHUB_ORIGIN_ORGANIZATION=wildwarehouse \
+       --env GITHUB_ORIGIN_REPOSITORY=greenantique \
+       --user user \
+       wildwarehouse/greenantique:a28ef68b1244d69306dc995d944b36d6c46cc3d0
+```
