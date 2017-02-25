@@ -26,7 +26,7 @@ dnf update --assumeyes &&
     dnf update --assumeyes &&
     dnf install --assumeyes docker-engine &&
     adduser user &&
-    usermod -a -g docker user &&
+    usermod -a -G docker user &&
     mkdir /home/user/.ssh &&
     chmod 0700 /home/user/.ssh &&
     cp /opt/docker/config /home/user/.ssh &&
