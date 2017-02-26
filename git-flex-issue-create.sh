@@ -18,4 +18,10 @@
 MAJOR=${1} &&
     MINOR=${2} &&
     PATCH=${3} &&
-    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${KEY_ID}\", \"key\": \"$(cat /home/user/.ssh/id_rsa.pub)\"}" https://api.github.com/user/keys
+    shift &&
+    shift &&
+    shift &&
+    git fetch upstream v${MAJOR}.${MINOR}.${PATCH} &&
+    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${@}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/issues
+    git checkout -b issues/$(printf %05d ) &&
+    git push upstream issues/$(print %05d ) &&

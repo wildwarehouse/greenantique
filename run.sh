@@ -24,6 +24,7 @@ dnf update --assumeyes &&
     dnf install --assumeyes curl &&
     dnf install --assumeyes sudo &&
     dnf install --assumeyes gnome-terminal &&
+    dnf install --assumeyes jq &&
     cp /opt/docker/docker.repo /etc/yum.repos.d &&
     dnf update --assumeyes &&
     dnf install --assumeyes docker-engine &&
@@ -43,6 +44,8 @@ dnf update --assumeyes &&
     cp /opt/docker/git-flex.sh /usr/local/bin/git-flex &&
     cp /opt/docker/git-flex-milestone.sh /usr/local/bin/git-flex-milestone &&
     cp /opt/docker/git-flex-milestone-create.sh /usr/local/bin/git-flex-milestone-create &&
+    cp /opt/docker/git-flex-issue.sh /usr/local/bin/git-flex-issue &&
+    cp /opt/docker/git-flex-issue-create.sh /usr/local/bin/git-flex-issue-create &&
     cp /opt/docker/git-flex-scratch.sh /usr/local/bin/git-flex-scratch &&
     cp /opt/docker/clean-docker.sh /usr/local/bin/clean-docker &&
     chmod 0555 /usr/local/bin/* &&

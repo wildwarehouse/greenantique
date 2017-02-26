@@ -15,4 +15,6 @@
 #   You should have received a copy of the GNU General Public License
 #   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
 
-git checkout -b scratch/$(uuidgen)
+CMD=${1} &&
+    shift &&
+    git-flex-issue-${CMD} ${@}

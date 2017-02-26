@@ -15,72 +15,103 @@
 #   You should have received a copy of the GNU General Public License
 #   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
 
-MAJOR=${1} &&
-    MINOR=${2} &&
-    PATCH=${3} &&
-    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${MAJOR}:${MINOR}:${PATCH}\", \"due_on\": \"$(date +"%Y%m%dT%H%M%SZ" -d "next month")\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY} &&
-    (
-	minor() {
-	    get fetch upstream v${MAJOR}.${MINOR} &&
-		patch ||
+(
+    [ ${#} == 0 ] &&
+	PREV_MAJOR=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m[0-9]+[.][0-9]+[.][0-9].*\$\"))) | map(.title | split(\".\") | .[0] | .[1:] | tonumber) | max") &&
+	(
+	    [ ${PREV_MAJOR} == "null" ] &&
+		(
+		    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m0.0.0\", \"due_on\": \"$(date --date \"next year\" +%Y%m%dT%H%M%SZ)\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+			git checkout -b v0 &&
+			cp /opt/docker/COPYING . &&
+			head --lines 20 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#g" -e "wREADME.md" &&
+			git add COPYING README.md &&
+			git commit --allow-empty --message "init 0" &&
+			git checkout -b v0.0 &&
+			git checkout -b v0.0.0 &&
+			git push upstream v0 v0.0 v0.0.0
+		) ||
 		    (
-			[ ${MINOR} == 0 ] &&
-			    git checkout -b v${MAJOR}.0 &&
-			    cp /opt/docker/COPYING . &&
-			    git add COPYING &&
-			    git commit --allow-empty --message "init" &&
-			    git push upstream v${MAJOR}.0 &&
-			    minor
-		    ) ||
-		    (
-			git fetch upstream v${MAJOR}.$((${MINOR}-1)) &&
-			    git checkout -b v${MAJOR}.${MINOR} &&
-			    git commit --allow-empty --message "init" &&
-			    git push upstream v${MAJOR}.${MINOR} &&
-			    patch
+			echo There was a problem creating major milestone 0 &&
+			    exit 67
 		    )
-	} &&
-	    patch() {
-		get fetch upstream v${MAJOR}.${MINOR}.${PATCH} &&
+	) ||
+	    (
+		(
+		    MAJOR=$((${PREV_MAJOR}+1)) &&
+			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${MAJOR}.0.0\", \"due_on\": \"$(date --date \"next month\" +%Y%m%dT%H%M%SZ)\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+			git fetch upstream v${PREV_MAJOR} &&
+			git checkout upstream/v${PREV_MAJOR} &&
+			git checkout -b v${MAJOR} &&
+			cp /opt/docker/COPYING . &&
+			head --lines 20 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#g" -e "wREADME.md" &&
+			git add COPYING README.md &&
+			git commit --allow-empty --message "init ${MAJOR}" &&
+			git checkout -b v${MAJOR}.0 &&
+			git checkout -b v${MAJOR}.0.0 &&
+			git push upstream v${MAJOR} v${MAJOR}.0 v${MAJOR}.0.0
+		) ||
 		    (
-			echo MILESTONE ALREADY EXISTS &&
-			    exit 64
+			echo There was a problem creating major milestone ${MAJOR} &&
+			    exit 68
+		    )
+	    )
+    ) ||
+    (
+	[ ${#} == 1 ] &&
+	    PREV_MINOR=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.][0-9]+[.][0-9].*\$\"))) | map(.title | split(\".\") | .[1] | tonumber) | max") &&
+	    (
+		[ ${PREV_MINOR} == "null" ] &&
+		    echo There is no existing milestone with MAJOR=${1} &&
+		    exit 65
+	    ) ||
+		(
+		    (
+			MINOR=$((${PREV_MINOR}+1)) &&
+			    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${MINOR}.0\", \"due_on\": \"$(date --date \"next week\" +%Y%m%dT%H%M%SZ)\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+			    git fetch upstream v${1}.${PREV_MINOR} &&
+			    git checkout upstream/v${1}.${PREV_MINOR} &&
+			    git checkout -b v${1}.${MINOR} &&
+			    git commit --allow-empty --message "init ${1}.${MINOR}" &&
+			    git checkout -b v${1}.${MINOR}.0.0 &&
+			    git push upstream v${1}.${MINOR} v${1}.${MINOR}.0
 		    ) ||
 			(
-			    [ ${PATCH} == 0 ] &&
-				git checkout -b v${MAJOR}.${MINOR}.0 &&
-				cp /opt/docker/COPYING . &&
-				git add COPYING &&
-				git commit --allow-empty --message "init" &&
-				git push upstream v${MAJOR}.${MINOR}.0
-			) ||
-			(
-			    git fetch upstream v${MAJOR}.${MINOR}.$((${PATCH}-1)) &&
-				git checkout -b v${MAJOR}.${MINOR}.${PATCH} &&
-				git commit --allow-empty --message "init" &&
-				git push upstream v${MAJOR}.${MINOR}.${PATCH}
+			    echo There was a problem creating minor milestone ${1}.${MINOR} &&
+				exit 69
 			)
-	    } &&
+		)
+    ) ||
+    (
+	[ ${#} == 2 ] &&
+	    PREV_PATCH=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.]${2}[.][0-9].*\$\"))) | map(.title | split(\".\") | .[2] | tonumber) | max") &&
 	    (
-		git fetch upstream v${MAJOR} &&
-		    minor ||
+		[ ${PREV_PATCH} == "null" ] &&
+		    echo There is no existing milestone with MAJOR=${1} and MINOR=${2} &&
+		    exit 66
+	    ) ||
+		(
+		    (
+			PATCH=$((${PREV_PATCH}+1)) &&
+			    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${2}.${PATCH}\", \"due_on\": \"$(date --date \"tomorrow\" +%Y%m%dT%H%M%SZ)\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+			    git fetch upstream v${1}.${2}.${PREV_PATCH} &&
+			    git checkout upstream/v${1}.${2}.${PREV_PATCH} &&
+			    git checkout -b v${1}.${2}.${PATCH} &&
+			    git commit --allow-empty --message "init ${1}.${2}.${MINOR}" &&
+			    git push upstream v${1}.${2}.${PATCH}
+		    ) ||
 			(
-			    [ ${MAJOR} == 0 ] &&
-				git checkout -b v0 &&
-				cp /opt/docker/COPYING . &&
-				head -n 19 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#" -e "wREADME.md" &&
-				git add COPYING README.md &&
-				git commit --allow-empty --message "init" &&
-				git push upstream v0 &&
-				minor
-			) ||
-			(
-			    git fetch upstream v$((${MAJOR}-1)) &&
-				git checkout -b v${MAJOR} &&
-				head -n 19 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#" -e "wREADME.md" &&
-				git commit --allow-empty --message "init" &&
-				git push upstream v${MAJOR} &&
-				minor
+			    echo There was a problem creating patch milestone ${1}.${2}.${PATCH} &&
+				exit 70
 			)
-	    )
+		)
+    ) ||
+    (
+	echo Usage:  git milestone create [major] [minor] &&
+	    exit 64
     )
+
+
+
+
+
