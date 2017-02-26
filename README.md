@@ -28,7 +28,7 @@ export GITHUB_USER_ID &&
 export GITHUB_TOKEN &&
 export GIT_USER_EMAIL="some.one@some.domain" &&
 export GIT_USER_NAME="Some One" &&
-export IMAGE_TAG=5876758ab2f740ba69fbbf87c6f54b8911bcb530 &&
+export IMAGE_TAG=2f94f206cea80192ad13f4c95303d8485c045d08 &&
 CID=$(mktemp -d) &&
 docker \
        run \
