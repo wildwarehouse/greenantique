@@ -25,5 +25,5 @@ MAJOR=${1} &&
     ISSUE_IID=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${@}\", \"milestone\": \"${MILESTONE_ID}\"}" https://api.github.com/repos/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/issues | jq ".number") &&
     git fetch upstream v${MAJOR}.${MINOR}.${PATCH} &&
     git checkout upstream/v${MAJOR}.${MINOR}.${PATCH} &&
-    git checkout -b issues/$(printf %05d ${ISSUE_IID}) &&
-    git push upstream issues/$(print %05d ${ISSUE_IID})
+    git checkout -b issues/$(printf %05d ${ISSUE}) &&
+    git push upstream issues/$(print %05d ${ISSUE})
