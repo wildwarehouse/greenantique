@@ -28,6 +28,7 @@ export GITHUB_USER_ID &&
 export GITHUB_TOKEN &&
 export GIT_USER_EMAIL="some.one@some.domain" &&
 export GIT_USER_NAME="Some One" &&
+export IMAGE_TAG=5876758ab2f740ba69fbbf87c6f54b8911bcb530 &&
 CID=$(mktemp -d) &&
 docker \
        run \
@@ -46,8 +47,8 @@ docker \
        --env GITHUB_ORIGIN_ORGANIZATION=wildwarehouse \
        --env GITHUB_ORIGIN_REPOSITORY=greenantique \
        --volume /var/run/docker.sock:/var/run/docker.sock \
-       --cidfile ${CID}/cid
+       --cidfile ${CID}/cid \
        --volume ${CID}:/opt/docker/run/cid \
        --user user \
-       wildwarehouse/greenantique:a28ef68b1244d69306dc995d944b36d6c46cc3d0
+       wildwarehouse/greenantique:${IMAGE_TAG}
 ```
