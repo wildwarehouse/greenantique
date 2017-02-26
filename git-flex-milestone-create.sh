@@ -15,9 +15,9 @@
 #   You should have received a copy of the GNU General Public License
 #   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
 
-(
-    [ ${#} == 0 ] &&
-	PREV_MAJOR=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m[0-9]+[.][0-9]+[.][0-9].*\$\"))) | map(.title | split(\".\") | .[0] | .[1:] | tonumber) | max") &&
+if [ ${#} == 0 ]
+then
+    PREV_MAJOR=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m[0-9]+[.][0-9]+[.][0-9].*\$\"))) | map(.title | split(\".\") | .[0] | .[1:] | tonumber) | max") &&
 	(
 	    [ ${PREV_MAJOR} == "null" ] &&
 		(
@@ -56,14 +56,13 @@
 			    exit 68
 		    )
 	    )
-    ) ||
-    (
-	[ ${#} == 1 ] &&
-	    PREV_MINOR=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.][0-9]+[.][0-9].*\$\"))) | map(.title | split(\".\") | .[1] | tonumber) | max") &&
-	    (
-		[ ${PREV_MINOR} == "null" ] &&
-		    echo There is no existing milestone with MAJOR=${1} &&
-		    exit 65
+elif [ ${#} == 1 ]
+then
+    PREV_MINOR=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.][0-9]+[.][0-9].*\$\"))) | map(.title | split(\".\") | .[1] | tonumber) | max") &&
+	(
+	    [ ${PREV_MINOR} == "null" ] &&
+		echo There is no existing milestone with MAJOR=${1} &&
+		exit 65
 	    ) ||
 		(
 		    (
@@ -81,10 +80,9 @@
 				exit 69
 			)
 		)
-    ) ||
-    (
-	[ ${#} == 2 ] &&
-	    PREV_PATCH=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.]${2}[.][0-9].*\$\"))) | map(.title | split(\".\") | .[2] | tonumber) | max") &&
+elif [ ${#} == 2 ]
+then
+    PREV_PATCH=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.]${2}[.][0-9].*\$\"))) | map(.title | split(\".\") | .[2] | tonumber) | max") &&
 	    (
 		[ ${PREV_PATCH} == "null" ] &&
 		    echo There is no existing milestone with MAJOR=${1} and MINOR=${2} &&
@@ -105,11 +103,10 @@
 				exit 70
 			)
 		)
-    ) ||
-    (
-	echo Usage:  git milestone create [major] [minor] &&
-	    exit 64
-    )
+else
+    echo Usage:  git milestone create [major] [minor] &&
+	exit 64
+fi
 
 
 
