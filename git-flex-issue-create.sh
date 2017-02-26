@@ -21,8 +21,8 @@ MAJOR=${1} &&
     shift &&
     shift &&
     shift &&
-    MILESTONE_ID=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${MAJOR}+[.]${MINOR}+[.]${PATCH}.*\$\")))|map(.id) | .[0]") &&
-    ISSUE_IID=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${@}\", \"milestone\": \"${MILESTONE_ID}\"}" https://api.github.com/repos/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/issues | jq "map(.number)|.[0]") &&
+    MILESTONE_ID=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${MAJOR}+[.]${MINOR}+[.]${PATCH}.*\$\")))|map(.number) | .[0]") &&
+    ISSUE_IID=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${@}\", \"milestone\": \"${MILESTONE_ID}\"}" https://api.github.com/repos/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/issues | jq ".number") &&
     git fetch upstream v${MAJOR}.${MINOR}.${PATCH} &&
     git checkout upstream/v${MAJOR}.${MINOR}.${PATCH} &&
     git checkout -b issues/$(printf %05d ${ISSUE_IID}) &&
