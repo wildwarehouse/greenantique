@@ -60,52 +60,50 @@ then
 elif [ ${#} == 1 ]
 then
     PREV_MINOR=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.][0-9]+[.][0-9].*\$\"))) | map(.title | split(\".\") | .[1] | tonumber) | max") &&
-	(
-	    [ ${PREV_MINOR} == "null" ] &&
-		echo There is no existing milestone with MAJOR=${1} &&
+	if [ ${PREV_MINOR} == "null" ]
+	then
+	    echo There is no existing milestone with MAJOR=${1} &&
 		exit 65
-	) ||
+	else
 	    (
+		MINOR=$((${PREV_MINOR}+1)) &&
+		    DUE_ON=$(date --date "next week" +%Y-%m-%dT%H:%M:%SZ) &&
+		    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${MINOR}.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+		    git fetch upstream v${1}.${PREV_MINOR} &&
+		    git checkout upstream/v${1}.${PREV_MINOR} &&
+		    git checkout -b v${1}.${MINOR} &&
+		    git commit --allow-empty --message "init ${1}.${MINOR}" &&
+		    git checkout -b v${1}.${MINOR}.0.0 &&
+		    git push upstream v${1}.${MINOR} v${1}.${MINOR}.0
+	    ) ||
 		(
-		    MINOR=$((${PREV_MINOR}+1)) &&
-			DUE_ON=$(date --date "next week" +%Y-%m-%dT%H:%M:%SZ) &&
-			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${MINOR}.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
-			git fetch upstream v${1}.${PREV_MINOR} &&
-			git checkout upstream/v${1}.${PREV_MINOR} &&
-			git checkout -b v${1}.${MINOR} &&
-			git commit --allow-empty --message "init ${1}.${MINOR}" &&
-			git checkout -b v${1}.${MINOR}.0.0 &&
-			git push upstream v${1}.${MINOR} v${1}.${MINOR}.0
-		) ||
-		    (
-			echo There was a problem creating minor milestone ${1}.${MINOR} &&
-			    exit 69
-		    )
-	    )
+		    echo There was a problem creating minor milestone ${1}.${MINOR} &&
+			exit 69
+		)
+	fi
 elif [ ${#} == 2 ]
 then
     PREV_PATCH=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.]${2}[.][0-9].*\$\"))) | map(.title | split(\".\") | .[2] | tonumber) | max") &&
-	(
-	    [ ${PREV_PATCH} == "null" ] &&
-		echo There is no existing milestone with MAJOR=${1} and MINOR=${2} &&
+	if [ ${PREV_PATCH} == "null" ]
+	then
+	    echo There is no existing milestone with MAJOR=${1} and MINOR=${2} &&
 		exit 66
-	) ||
+	else
 	    (
+		PATCH=$((${PREV_PATCH}+1)) &&
+		    DUE_ON=$(date --date "tomorrow" +%Y-%m-%dT%H:%M:%SZ) &&
+		    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${2}.${PATCH}\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+		    git fetch upstream v${1}.${2}.${PREV_PATCH} &&
+		    git checkout upstream/v${1}.${2}.${PREV_PATCH} &&
+		    git checkout -b v${1}.${2}.${PATCH} &&
+		    git commit --allow-empty --message "init ${1}.${2}.${MINOR}" &&
+		    git push upstream v${1}.${2}.${PATCH}
+	    ) ||
 		(
-		    PATCH=$((${PREV_PATCH}+1)) &&
-			DUE_ON=$(date --date "tomorrow" +%Y-%m-%dT%H:%M:%SZ) &&
-			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${2}.${PATCH}\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
-			git fetch upstream v${1}.${2}.${PREV_PATCH} &&
-			git checkout upstream/v${1}.${2}.${PREV_PATCH} &&
-			git checkout -b v${1}.${2}.${PATCH} &&
-			git commit --allow-empty --message "init ${1}.${2}.${MINOR}" &&
-			git push upstream v${1}.${2}.${PATCH}
-		) ||
-		    (
-			echo There was a problem creating patch milestone ${1}.${2}.${PATCH} &&
-			    exit 70
-		    )
-	    )
+		    echo There was a problem creating patch milestone ${1}.${2}.${PATCH} &&
+			exit 70
+		)
+	fi
 else
     echo Usage:  git milestone create [major] [minor] &&
 	exit 64
