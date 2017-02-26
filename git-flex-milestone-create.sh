@@ -21,7 +21,8 @@ then
 	(
 	    [ ${PREV_MAJOR} == "null" ] &&
 		(
-		    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m0.0.0\", \"due_on\": \"$(date --date \"next year\" +%Y%m%dT%H%M%SZ)\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+		    DUE_ON=$(date --date "next year" +%Y-%m-%dT%H:%M:%SZ) &&
+			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m0.0.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
 			git checkout -b v0 &&
 			cp /opt/docker/COPYING . &&
 			head --lines 20 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#g" -e "wREADME.md" &&
@@ -39,7 +40,8 @@ then
 	    (
 		(
 		    MAJOR=$((${PREV_MAJOR}+1)) &&
-			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${MAJOR}.0.0\", \"due_on\": \"$(date --date \"next month\" +%Y%m%dT%H%M%SZ)\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+			DUE_ON=$(date --date \"next month\" +%Y-%m-%dT%H:%M:%SZ) &&
+			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${MAJOR}.0.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
 			git fetch upstream v${PREV_MAJOR} &&
 			git checkout upstream/v${PREV_MAJOR} &&
 			git checkout -b v${MAJOR} &&
@@ -63,46 +65,48 @@ then
 	    [ ${PREV_MINOR} == "null" ] &&
 		echo There is no existing milestone with MAJOR=${1} &&
 		exit 65
-	    ) ||
+	) ||
+	    (
 		(
+		    MINOR=$((${PREV_MINOR}+1)) &&
+			DUE_ON=$(date --date "next week" +%Y-%m-%dT%H:%M:%SZ) &&
+			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${MINOR}.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+			git fetch upstream v${1}.${PREV_MINOR} &&
+			git checkout upstream/v${1}.${PREV_MINOR} &&
+			git checkout -b v${1}.${MINOR} &&
+			git commit --allow-empty --message "init ${1}.${MINOR}" &&
+			git checkout -b v${1}.${MINOR}.0.0 &&
+			git push upstream v${1}.${MINOR} v${1}.${MINOR}.0
+		) ||
 		    (
-			MINOR=$((${PREV_MINOR}+1)) &&
-			    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${MINOR}.0\", \"due_on\": \"$(date --date \"next week\" +%Y%m%dT%H%M%SZ)\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
-			    git fetch upstream v${1}.${PREV_MINOR} &&
-			    git checkout upstream/v${1}.${PREV_MINOR} &&
-			    git checkout -b v${1}.${MINOR} &&
-			    git commit --allow-empty --message "init ${1}.${MINOR}" &&
-			    git checkout -b v${1}.${MINOR}.0.0 &&
-			    git push upstream v${1}.${MINOR} v${1}.${MINOR}.0
-		    ) ||
-			(
-			    echo There was a problem creating minor milestone ${1}.${MINOR} &&
-				exit 69
-			)
-		)
+			echo There was a problem creating minor milestone ${1}.${MINOR} &&
+			    exit 69
+		    )
+	    )
 elif [ ${#} == 2 ]
 then
     PREV_PATCH=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.]${2}[.][0-9].*\$\"))) | map(.title | split(\".\") | .[2] | tonumber) | max") &&
+	(
+	    [ ${PREV_PATCH} == "null" ] &&
+		echo There is no existing milestone with MAJOR=${1} and MINOR=${2} &&
+		exit 66
+	) ||
 	    (
-		[ ${PREV_PATCH} == "null" ] &&
-		    echo There is no existing milestone with MAJOR=${1} and MINOR=${2} &&
-		    exit 66
-	    ) ||
 		(
+		    PATCH=$((${PREV_PATCH}+1)) &&
+			DUE_ON=$(date --date "tomorrow" +%Y-%m-%dT%H:%M:%SZ) &&
+			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${2}.${PATCH}\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+			git fetch upstream v${1}.${2}.${PREV_PATCH} &&
+			git checkout upstream/v${1}.${2}.${PREV_PATCH} &&
+			git checkout -b v${1}.${2}.${PATCH} &&
+			git commit --allow-empty --message "init ${1}.${2}.${MINOR}" &&
+			git push upstream v${1}.${2}.${PATCH}
+		) ||
 		    (
-			PATCH=$((${PREV_PATCH}+1)) &&
-			    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${1}.${2}.${PATCH}\", \"due_on\": \"$(date --date \"tomorrow\" +%Y%m%dT%H%M%SZ)\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
-			    git fetch upstream v${1}.${2}.${PREV_PATCH} &&
-			    git checkout upstream/v${1}.${2}.${PREV_PATCH} &&
-			    git checkout -b v${1}.${2}.${PATCH} &&
-			    git commit --allow-empty --message "init ${1}.${2}.${MINOR}" &&
-			    git push upstream v${1}.${2}.${PATCH}
-		    ) ||
-			(
-			    echo There was a problem creating patch milestone ${1}.${2}.${PATCH} &&
-				exit 70
-			)
-		)
+			echo There was a problem creating patch milestone ${1}.${2}.${PATCH} &&
+			    exit 70
+		    )
+	    )
 else
     echo Usage:  git milestone create [major] [minor] &&
 	exit 64
