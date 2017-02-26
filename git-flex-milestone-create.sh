@@ -27,7 +27,9 @@ then
 		    cp /opt/docker/COPYING . &&
 		    head --lines 20 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#g" -e "wREADME.md" &&
 		    git add COPYING README.md &&
+		    chmod 0400 .git/hooks/post-commit &&
 		    git commit --allow-empty --message "init 0" &&
+		    chmod 0500 .git/hooks/post-commit &&
 		    git checkout -b v0.0 &&
 		    git checkout -b v0.0.0 &&
 		    git push upstream v0 v0.0 v0.0.0
@@ -47,7 +49,9 @@ then
 		    cp /opt/docker/COPYING . &&
 		    head --lines 20 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#g" -e "wREADME.md" &&
 		    git add COPYING README.md &&
+		    chmod 0400 .git/hooks/post-commit &&
 		    git commit --allow-empty --message "init ${MAJOR}" &&
+		    chmod 0500 .git/hooks/post-commit &&
 		    git checkout -b v${MAJOR}.0 &&
 		    git checkout -b v${MAJOR}.0.0 &&
 		    git push upstream v${MAJOR} v${MAJOR}.0 v${MAJOR}.0.0
@@ -72,7 +76,9 @@ then
 		    git fetch upstream v${1}.${PREV_MINOR} &&
 		    git checkout upstream/v${1}.${PREV_MINOR} &&
 		    git checkout -b v${1}.${MINOR} &&
+		    chmod 0400 .git/hooks/post-commit &&
 		    git commit --allow-empty --message "init ${1}.${MINOR}" &&
+		    chmod 0500 .git/hooks/post-commit &&
 		    git checkout -b v${1}.${MINOR}.0.0 &&
 		    git push upstream v${1}.${MINOR} v${1}.${MINOR}.0
 	    ) ||
@@ -96,7 +102,9 @@ then
 		    git fetch upstream v${1}.${2}.${PREV_PATCH} &&
 		    git checkout upstream/v${1}.${2}.${PREV_PATCH} &&
 		    git checkout -b v${1}.${2}.${PATCH} &&
+		    chmod 0400 .git/hooks/post-commit &&
 		    git commit --allow-empty --message "init ${1}.${2}.${MINOR}" &&
+		    chmod 0500 .git/hooks/post-commit &&
 		    git push upstream v${1}.${2}.${PATCH}
 	    ) ||
 		(
