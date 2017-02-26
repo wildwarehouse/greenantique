@@ -22,4 +22,4 @@ KEY_ID="$(uuidgen)" &&
     git config user.name "${GIT_USER_NAME}" &&
     git remote add upstream upstream:${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY} &&
     git remote add origin origin:${GITHUB_ORIGIN_ORGANIZATION}/${GITHUB_ORIGIN_REPOSITORY} &&
-    bash
+    /usr/bin/gnome-terminal
