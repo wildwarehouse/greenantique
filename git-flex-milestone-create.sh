@@ -18,46 +18,45 @@
 if [ ${#} == 0 ]
 then
     PREV_MAJOR=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m[0-9]+[.][0-9]+[.][0-9].*\$\"))) | map(.title | split(\".\") | .[0] | .[1:] | tonumber) | max") &&
-	(
-	    [ ${PREV_MAJOR} == "null" ] &&
-		(
-		    DUE_ON=$(date --date "next year" +%Y-%m-%dT%H:%M:%SZ) &&
-			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m0.0.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
-			git checkout -b v0 &&
-			cp /opt/docker/COPYING . &&
-			head --lines 20 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#g" -e "wREADME.md" &&
-			git add COPYING README.md &&
-			git commit --allow-empty --message "init 0" &&
-			git checkout -b v0.0 &&
-			git checkout -b v0.0.0 &&
-			git push upstream v0 v0.0 v0.0.0
-		) ||
+	if [ ${PREV_MAJOR} == "null" ]
+	then
+	    (
+		DUE_ON=$(date --date "next year" +%Y-%m-%dT%H:%M:%SZ) &&
+		    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m0.0.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+		    git checkout -b v0 &&
+		    cp /opt/docker/COPYING . &&
+		    head --lines 20 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#g" -e "wREADME.md" &&
+		    git add COPYING README.md &&
+		    git commit --allow-empty --message "init 0" &&
+		    git checkout -b v0.0 &&
+		    git checkout -b v0.0.0 &&
+		    git push upstream v0 v0.0 v0.0.0
+	    ) ||
 		    (
 			echo There was a problem creating major milestone 0 &&
 			    exit 67
 		    )
-	) ||
+	else
 	    (
+		MAJOR=$((${PREV_MAJOR}+1)) &&
+		    DUE_ON=$(date --date \"next month\" +%Y-%m-%dT%H:%M:%SZ) &&
+		    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${MAJOR}.0.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
+		    git fetch upstream v${PREV_MAJOR} &&
+		    git checkout upstream/v${PREV_MAJOR} &&
+		    git checkout -b v${MAJOR} &&
+		    cp /opt/docker/COPYING . &&
+		    head --lines 20 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#g" -e "wREADME.md" &&
+		    git add COPYING README.md &&
+		    git commit --allow-empty --message "init ${MAJOR}" &&
+		    git checkout -b v${MAJOR}.0 &&
+		    git checkout -b v${MAJOR}.0.0 &&
+		    git push upstream v${MAJOR} v${MAJOR}.0 v${MAJOR}.0.0
+	    ) ||
 		(
-		    MAJOR=$((${PREV_MAJOR}+1)) &&
-			DUE_ON=$(date --date \"next month\" +%Y-%m-%dT%H:%M:%SZ) &&
-			curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${MAJOR}.0.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
-			git fetch upstream v${PREV_MAJOR} &&
-			git checkout upstream/v${PREV_MAJOR} &&
-			git checkout -b v${MAJOR} &&
-			cp /opt/docker/COPYING . &&
-			head --lines 20 /opt/docker/README.md | sed -e "s#greenantique#${GITHUB_UPSTREAM_REPOSITORY}#g" -e "wREADME.md" &&
-			git add COPYING README.md &&
-			git commit --allow-empty --message "init ${MAJOR}" &&
-			git checkout -b v${MAJOR}.0 &&
-			git checkout -b v${MAJOR}.0.0 &&
-			git push upstream v${MAJOR} v${MAJOR}.0 v${MAJOR}.0.0
-		) ||
-		    (
-			echo There was a problem creating major milestone ${MAJOR} &&
-			    exit 68
-		    )
-	    )
+		    echo There was a problem creating major milestone ${MAJOR} &&
+			exit 68
+		)
+	fi
 elif [ ${#} == 1 ]
 then
     PREV_MINOR=$(curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_USER_ID}/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones | jq "map(select(.title|test(\"^m${1}[.][0-9]+[.][0-9].*\$\"))) | map(.title | split(\".\") | .[1] | tonumber) | max") &&
