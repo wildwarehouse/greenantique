@@ -1,3 +1,4 @@
+#!/bin/sh
 # Copyright © (C) 2017 Emory Merryman <emory.merryman@gmail.com>
 #   This file is part of greenantique.
 #
@@ -13,11 +14,12 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
-FROM fedora:25
-MAINTAINER Emory Merryman emory.merryman@gmail.com
-COPY run.sh entrypoint.sh user.sudo docker.repo config known_hosts post-commit.sh git-flex.sh git-flex-milestone.sh git-flex-milestone-create.sh git-flex-issue.sh git-flex-issue-create.sh git-flex-draft.sh git-flex-draft-create.sh git-flex-scratch.sh clean-docker.sh COPYING README.md /opt/docker/
-RUN ["/usr/bin/sh", "/opt/docker/run.sh"]
-VOLUME /usr/local/src
-WORKDIR /usr/local/src
-ENTRYPOINT ["/usr/bin/sh", "/opt/docker/entrypoint.sh"]
-CMD []
+
+ISSUE=$(printf %05d ${1}) &&
+    git fetch upstream issues/${ISSUE} &&
+    git checkout upstream/issues/${ISSUE} &&
+    git checkout -b drafts/${ISSUE}/$(uuidgen) &&
+    chmod 0400 .git/hooks/post-commit &&
+    commit --allow-empty --message "${@}"
+    chmod 0500 .git/hooks/post-commit
+    
