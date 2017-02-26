@@ -48,6 +48,7 @@ dnf update --assumeyes &&
     cp /opt/docker/git-flex-issue-create.sh /usr/local/bin/git-flex-issue-create &&
     cp /opt/docker/git-flex-issue.sh /usr/local/bin/git-flex-draft &&
     cp /opt/docker/git-flex-issue-create.sh /usr/local/bin/git-flex-draft-create &&
+    cp /opt/docker/git-flex-issue-close.sh /usr/local/bin/git-flex-draft-close &&
     cp /opt/docker/git-flex-scratch.sh /usr/local/bin/git-flex-scratch &&
     cp /opt/docker/clean-docker.sh /usr/local/bin/clean-docker &&
     chmod 0555 /usr/local/bin/* &&

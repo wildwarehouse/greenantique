@@ -15,11 +15,12 @@
 #   You should have received a copy of the GNU General Public License
 #   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
 
-KEY_ID="$(uuidgen)" &&
-    ssh-keygen -f /home/user/.ssh/id_rsa -P "" -C "${KEY_ID}" &&
-    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"${KEY_ID}\", \"key\": \"$(cat /home/user/.ssh/id_rsa.pub)\"}" https://api.github.com/user/keys &&
-    git config user.email "${GIT_USER_EMAIL}" &&
-    git config user.name "${GIT_USER_NAME}" &&
-    git remote add upstream upstream:${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY} &&
-    git remote add origin origin:${GITHUB_ORIGIN_ORGANIZATION}/${GITHUB_ORIGIN_REPOSITORY} &&
-    /usr/bin/bash /usr/bin/gnome-terminal
+ISSUE=$(git rev-parse HEAD | sed -e "s#^issues/##" -e "s#/.*\$##") &&
+    DRAFT=$(git rev-parse HEAD | sed -e "s#^issues/[0-9][0-9][0-9][0-9][0-9]/##") &&
+    ID=$(uuidgen) &&
+    git fetch upstream issues/${ISSUE} &&
+    git checkout -b rebase/${ISSUE}/${DRAFT}/${ID} &&
+    git rebase issues/${ISSUE} &&
+    git checkout -b reset/${ISSUE}/${DRAFT}/${ID} &&
+    git reset --soft issues/${ISSUE} &&
+    git commit
