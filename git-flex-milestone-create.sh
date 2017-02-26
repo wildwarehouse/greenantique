@@ -39,7 +39,7 @@ then
 	else
 	    (
 		MAJOR=$((${PREV_MAJOR}+1)) &&
-		    DUE_ON=$(date --date \"next month\" +%Y-%m-%dT%H:%M:%SZ) &&
+		    DUE_ON=$(date --date "next month" +%Y-%m-%dT%H:%M:%SZ) &&
 		    curl --user "${GITHUB_USER_ID}:${GITHUB_TOKEN}" --data "{\"title\": \"m${MAJOR}.0.0\", \"due_on\": \"${DUE_ON}\"}" https://api.github.com/repos/${GITHUB_UPSTREAM_ORGANIZATION}/${GITHUB_UPSTREAM_REPOSITORY}/milestones &&
 		    git fetch upstream v${PREV_MAJOR} &&
 		    git checkout upstream/v${PREV_MAJOR} &&
