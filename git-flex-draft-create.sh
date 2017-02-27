@@ -20,6 +20,6 @@ ISSUE=$(printf %05d ${1}) &&
     git checkout upstream/issues/${ISSUE} &&
     git checkout -b drafts/${ISSUE}/$(uuidgen) &&
     chmod 0400 .git/hooks/post-commit &&
-    commit --allow-empty --message "${@}"
+    git commit --allow-empty --message "${@}"
     chmod 0500 .git/hooks/post-commit
     
