@@ -15,8 +15,8 @@
 #   You should have received a copy of the GNU General Public License
 #   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
 
-ISSUE=$(git rev-parse HEAD | sed -e "s#^issues/##" -e "s#/.*\$##") &&
-    DRAFT=$(git rev-parse HEAD | sed -e "s#^issues/[0-9][0-9][0-9][0-9][0-9]/##") &&
+ISSUE=$(git rev-parse --abbrev-ref HEAD | sed -e "s#^issues/##" -e "s#/.*\$##") &&
+    DRAFT=$(git rev-parse --abbrev-ref HEAD | sed -e "s#^issues/[0-9][0-9][0-9][0-9][0-9]/##") &&
     ID=$(uuidgen) &&
     git fetch upstream issues/${ISSUE} &&
     git checkout -b rebase/${ISSUE}/${DRAFT}/${ID} &&
