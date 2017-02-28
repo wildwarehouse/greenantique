@@ -1,0 +1,57 @@
+#!/bin/sh
+# Copyright © (C) 2017 Emory Merryman <emory.merryman@gmail.com>
+#   This file is part of greenantique.
+#
+#   greenantique is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   greenantique is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with greenantique.  If not, see <http://www.gnu.org/licenses/>.
+
+dnf update --assumeyes &&
+    dnf install --assumeyes git &&
+    dnf install --assumeyes firefox &&
+    dnf install --assumeyes bash &&
+    dnf install --assumeyes emacs* &&
+    dnf install --assumeyes meld &&
+    dnf install --assumeyes curl &&
+    dnf install --assumeyes sudo &&
+    dnf install --assumeyes gnome-terminal &&
+    dnf install --assumeyes jq &&
+    cp /opt/docker/docker.repo /etc/yum.repos.d &&
+    dnf update --assumeyes &&
+    dnf install --assumeyes docker-engine &&
+    adduser user &&
+    cp /opt/docker/user.sudo /etc/sudoers.d/user &&
+    chmod 0444 /etc/sudoers.d/user &&
+    mkdir /home/user/.ssh &&
+    chmod 0700 /home/user/.ssh &&
+    cp /opt/docker/config /home/user/.ssh &&
+    chmod 0600 /home/user/.ssh/config &&
+    cp /opt/docker/known_hosts /home/user/.ssh &&
+    chmod 0644 /home/user/.ssh/known_hosts &&
+    chown --recursive user:user /home/user/.ssh &&
+    git -C /usr/local/src init &&
+    cp /opt/docker/post-commit.sh /usr/local/src/.git/hooks/post-commit &&
+    chmod 0500 /usr/local/src/.git/hooks/post-commit &&
+    cp /opt/docker/git-flex.sh /usr/local/bin/git-flex &&
+    cp /opt/docker/git-flex-milestone.sh /usr/local/bin/git-flex-milestone &&
+    cp /opt/docker/git-flex-milestone-create.sh /usr/local/bin/git-flex-milestone-create &&
+    cp /opt/docker/git-flex-issue.sh /usr/local/bin/git-flex-issue &&
+    cp /opt/docker/git-flex-issue-create.sh /usr/local/bin/git-flex-issue-create &&
+    cp /opt/docker/git-flex-issue.sh /usr/local/bin/git-flex-draft &&
+    cp /opt/docker/git-flex-issue-create.sh /usr/local/bin/git-flex-draft-create &&
+    cp /opt/docker/git-flex-issue-close.sh /usr/local/bin/git-flex-draft-close &&
+    cp /opt/docker/git-flex-scratch.sh /usr/local/bin/git-flex-scratch &&
+    cp /opt/docker/clean-docker.sh /usr/local/bin/clean-docker &&
+    chmod 0555 /usr/local/bin/* &&
+    chown --recursive user:user /usr/local/src &&
+    dnf update --assumeyes &&
+    dnf clean all
