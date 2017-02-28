@@ -18,8 +18,5 @@
 ISSUE=$(printf %05d ${1}) &&
     git fetch upstream issues/${ISSUE} &&
     git checkout upstream/issues/${ISSUE} &&
-    git checkout -b drafts/${ISSUE}/$(uuidgen) &&
-    chmod 0400 .git/hooks/post-commit &&
-    git commit --allow-empty --message "${@}"
-    chmod 0500 .git/hooks/post-commit
+    git checkout -b drafts/${ISSUE}/$(uuidgen)
     
